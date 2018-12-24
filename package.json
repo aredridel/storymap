@@ -1,0 +1,16 @@
+{
+  "name": "storymap",
+  "version": "1.0.0",
+  "description": "A small tool for understanding the structure of interlinked markdown files.",
+  "keywords": [
+    "graphviz",
+    "markdown"
+  ],
+  "main": "index.js",
+  "author": "Aria Stewart <aredridel@dinhe.net>",
+  "license": "ISC",
+  "dependencies": {
+    "remark-parse": "^6.0.3",
+    "unified": "^7.1.0"
+  }
+}
