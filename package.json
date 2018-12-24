@@ -10,6 +10,7 @@
   "author": "Aria Stewart <aredridel@dinhe.net>",
   "license": "ISC",
   "dependencies": {
+    "@aredridel/url-relative": "^1.1.0",
     "remark-parse": "^6.0.3",
     "unified": "^7.1.0"
   }

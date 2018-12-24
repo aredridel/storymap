@@ -4,6 +4,7 @@ const unified = require('unified')
 const markdown = require('remark-parse')
 const url = require('url')
 const { basename } = require('path')
+const relative = require('@aredridel/url-relative')
 
 const processor = unified()
     .use(markdown)
@@ -49,10 +50,10 @@ async function wikiMap(start) {
     return map
 }
 
-function mapToDot(map) {
+function mapToDot(root, map) {
     let out = "digraph {\n"
     for (const [url, el] of Object.entries(map)) {
-            out += `"${url}" [label="${basename(decodeURIComponent((new URL(url)).pathname))}" url="${url}"];\n`
+        out += `"${url}" [label="${basename(decodeURIComponent((new URL(url)).pathname))}" href="${relative(root, url)}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
@@ -65,4 +66,5 @@ function mapToDot(map) {
     return out;
 }
 
-wikiMap(url.pathToFileURL(process.argv[2]).href).then(mapToDot).then(console.log, console.warn)
+const root = url.pathToFileURL(process.argv[2]).href 
+wikiMap(root).then(e => mapToDot(root, e)).then(console.log, console.warn)
