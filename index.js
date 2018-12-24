@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { promisify } = require('util');
 const readFile = promisify(require('fs').readFile)
 const unified = require('unified')
@@ -64,6 +66,11 @@ function mapToDot(root, map) {
     }
     out += "}\n";
     return out;
+}
+
+if (!process.argv[2]) {
+    console.warn(`use: ${process.argv.slice(1).join(' ')} filename`);
+    process.exit(1);
 }
 
 const root = url.pathToFileURL(process.argv[2]).href 
