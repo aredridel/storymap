@@ -1,25 +1,46 @@
 #!/usr/bin/env node
 
+// File handling
 const { promisify } = require('util');
-const readFile = promisify(require('fs').readFile)
-const unified = require('unified')
-const markdown = require('remark-parse')
 const url = require('url')
 const { basename } = require('path')
 const relative = require('@aredridel/url-relative')
 
-const processor = unified()
+// File parsing
+const readFile = promisify(require('fs').readFile)
+const unified = require('unified')
+const markdown = require('remark-parse')
+
+const parser = unified()
     .use(markdown)
 
-async function read(file) {
-    const d = await readFile(file, 'utf-8')
-    const md = processor.parse(d)
-    return md
+// Text parsing
+const compromise = require('compromise')
+const remark2text = require('remark-retext')
+const retextStringify = require('retext-stringify')
+const english = require('retext-english')
+const pos = require('retext-pos')
+
+const stripper = unified()
+    .use(markdown)
+    .use(remark2text, english.Parser)
+    .use(pos)
+    .use(retextStringify)
+
+async function getCharactersFromURL(u) {
+    const path = url.fileURLToPath(u)
+    const d = await readFile(path, 'utf-8')
+    const text = stripper.processSync(d).toString()
+    
+    const arr = nlp(text).people().out('topk').filter(e => e.percent > 10).map(e => e.normal)
+
+    return arr
 }
 
 async function getLinksFromURL(u) {
     const path = url.fileURLToPath(u)
-    const ast = await read(path)
+    const file = await readFile(path, 'utf-8')
+    const ast = parser.parse(file)
     return getLinks(u, ast)
 }
 
@@ -42,7 +63,7 @@ async function wikiMap(start) {
         if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
         seen.add(el)
         try {
-            map[el] = { children: await getLinksFromURL(el) }
+            map[el] = { children: await getLinksFromURL(el), characters: await getCharactersFromURL(el) }
             queue = queue.concat(map[el].children.map(e => url.resolve(el, e.url)))
         } catch (e) {
             if (e.code != 'ENOENT') throw e;
@@ -55,7 +76,7 @@ async function wikiMap(start) {
 function mapToDot(root, map) {
     let out = "digraph {\n"
     for (const [url, el] of Object.entries(map)) {
-        out += `"${url}" [label="${basename(decodeURIComponent((new URL(url)).pathname))}" href="${relative(root, url)}"];\n`
+        out += `"${url}" [label="${basename(decodeURIComponent((new URL(url)).pathname))}\\n${el.characters.join(', ')}" href="${relative(root, url)}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
