@@ -27,12 +27,16 @@ const stripper = unified()
     .use(pos)
     .use(retextStringify)
 
+function unsmart(s) {
+    return s.replace(/[“”]/, '"').replace(/[‘’]/, "'")
+}
+
 async function getCharactersFromURL(u) {
     const path = url.fileURLToPath(u)
     const d = await readFile(path, 'utf-8')
-    const text = stripper.processSync(d).toString()
+    const text = (await stripper.process(d)).toString()
     
-    const arr = nlp(text).people().out('topk').filter(e => e.percent > 10).map(e => e.normal)
+    const arr = compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal.replace(/^[a-z]/, l => l.toUpperCase()))
 
     return arr
 }
