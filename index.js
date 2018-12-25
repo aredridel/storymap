@@ -29,64 +29,88 @@ const stripper = unified()
     .use(pos)
     .use(retextStringify)
 
+// Util
+const uniq = require('array-uniq')
+
 function unsmart(s) {
     return s.replace(/[“”]/, '"').replace(/[‘’]/, "'")
 }
 
-async function getCharactersFromURL(u) {
-    const path = url.fileURLToPath(u)
-    const file = await readFile(path, 'utf-8')
-    const { body, attributes } = frontMatter(file)
-    const text = (await stripper.process(body)).toString()
-    
-    const arr = compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal)
 
-    return (attributes.characters ? attributes.characters : arr)
-        .map(e => e.replace(/^[a-z]/, l => l.toUpperCase()))
-}
-
-async function getLinksFromURL(u) {
-    const path = url.fileURLToPath(u)
-    const file = await readFile(path, 'utf-8')
-    const { body } = frontMatter(file)
-    const ast = parser.parse(body)
-    return getLinks(u, ast)
-}
-
-function getLinks(u, ast) {
-    if (ast.type == 'link') {
-        return [{url: url.resolve(u, ast.url), text: ast.children[0].value}]
-    } else if (ast.children) {
-        return ast.children.map(e => getLinks(u, e)).reduce((a, e) => a.concat(e), [])
-    } else {
-        return []
+class WikiMap {
+    constructor() {
+        this.characters = []
     }
-}
 
-async function wikiMap(start) {
-    const seen = new Set;
-    const map = {};
-    let queue = [start];
-    let el;
-    while (el = queue.pop()) {
-        if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
-        seen.add(el)
-        try {
-            map[el] = { children: await getLinksFromURL(el), characters: await getCharactersFromURL(el) }
-            queue = queue.concat(map[el].children.map(e => url.resolve(el, e.url)))
-        } catch (e) {
-            if (e.code != 'ENOENT') throw e;
-            map[el] = { error: 'ENOENT' }
+
+    async run(start) {
+        const getCharactersFromURL = async (u) => {
+            const path = url.fileURLToPath(u)
+            const file = await readFile(path, 'utf-8')
+            const { body, attributes } = frontMatter(file)
+            const text = (await stripper.process(body)).toString()
+
+            if ( attributes.characters ) {
+                compromise.plugin({
+                    words: attributes.characters.reduce((a, e) => ({ [e]: 'FirstName', ...a }), {})
+                })
+            }
+            
+            const characters = (
+                attributes.characters
+                ? attributes.characters
+                : compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal)
+            )
+                .map(e => e.replace(/^[a-z]/, l => l.toUpperCase()))
+
+            this.characters = uniq(this.characters.concat(characters))
+
+            return characters
         }
+
+        const getLinksFromURL= async (u) => {
+            const path = url.fileURLToPath(u)
+            const file = await readFile(path, 'utf-8')
+            const { body } = frontMatter(file)
+            const ast = parser.parse(body)
+            return getLinks(u, ast)
+        }
+
+        function getLinks(u, ast) {
+            if (ast.type == 'link') {
+                return [{url: url.resolve(u, ast.url), text: ast.children[0].value}]
+            } else if (ast.children) {
+                return ast.children.map(e => getLinks(u, e)).reduce((a, e) => a.concat(e), [])
+            } else {
+                return []
+            }
+        }
+        const seen = new Set;
+        const map = {};
+        let queue = [start];
+        let el;
+        while (el = queue.pop()) {
+            if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
+            seen.add(el)
+            try {
+                map[el] = { children: await getLinksFromURL(el), characters: await getCharactersFromURL(el) }
+                queue = queue.concat(map[el].children.map(e => url.resolve(el, e.url)))
+            } catch (e) {
+                if (e.code != 'ENOENT') throw e;
+                map[el] = { error: 'ENOENT' }
+            }
+        }
+        return map
     }
-    return map
 }
 
 function mapToDot(root, map) {
     let out = "digraph {\n"
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
-        out += `"${url}" [label="${basename(filename, extname(filename))}\\n${el.characters.join(', ')}" href="${relative(root, url)}"];\n`
+        const label = [basename(filename, extname(filename)), el.characters ? el.characters.join(', ') : null].filter(e=>e).join("\\n")
+        const href = relative(root, url)
+        out += `"${url}" [label="${label}" href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
@@ -105,4 +129,7 @@ if (!process.argv[2]) {
 }
 
 const root = url.pathToFileURL(process.argv[2]).href 
-wikiMap(root).then(e => mapToDot(root, e)).then(console.log, console.warn)
+
+const map = new WikiMap
+
+map.run(root).then(e => mapToDot(root, e)).then(console.log, console.warn)

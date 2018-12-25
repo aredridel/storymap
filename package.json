@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@aredridel/url-relative": "^1.1.0",
+    "array-uniq": "^2.0.0",
     "compromise": "^11.12.4",
     "front-matter": "^3.0.1",
     "remark-parse": "^6.0.3",
