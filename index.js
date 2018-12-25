@@ -3,7 +3,7 @@
 // File handling
 const { promisify } = require('util');
 const url = require('url')
-const { basename } = require('path')
+const { basename, extname } = require('path')
 const relative = require('@aredridel/url-relative')
 
 // File parsing
@@ -80,7 +80,8 @@ async function wikiMap(start) {
 function mapToDot(root, map) {
     let out = "digraph {\n"
     for (const [url, el] of Object.entries(map)) {
-        out += `"${url}" [label="${basename(decodeURIComponent((new URL(url)).pathname))}\\n${el.characters.join(', ')}" href="${relative(root, url)}"];\n`
+        const filename = decodeURIComponent((new URL(url)).pathname)
+        out += `"${url}" [label="${basename(filename, extname(filename))}\\n${el.characters.join(', ')}" href="${relative(root, url)}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
