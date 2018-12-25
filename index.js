@@ -14,6 +14,8 @@ const markdown = require('remark-parse')
 const parser = unified()
     .use(markdown)
 
+const frontMatter = require('front-matter')
+
 // Text parsing
 const compromise = require('compromise')
 const remark2text = require('remark-retext')
@@ -33,18 +35,21 @@ function unsmart(s) {
 
 async function getCharactersFromURL(u) {
     const path = url.fileURLToPath(u)
-    const d = await readFile(path, 'utf-8')
-    const text = (await stripper.process(d)).toString()
+    const file = await readFile(path, 'utf-8')
+    const { body, attributes } = frontMatter(file)
+    const text = (await stripper.process(body)).toString()
     
-    const arr = compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal.replace(/^[a-z]/, l => l.toUpperCase()))
+    const arr = compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal)
 
-    return arr
+    return (attributes.characters ? attributes.characters : arr)
+        .map(e => e.replace(/^[a-z]/, l => l.toUpperCase()))
 }
 
 async function getLinksFromURL(u) {
     const path = url.fileURLToPath(u)
     const file = await readFile(path, 'utf-8')
-    const ast = parser.parse(file)
+    const { body } = frontMatter(file)
+    const ast = parser.parse(body)
     return getLinks(u, ast)
 }
 
