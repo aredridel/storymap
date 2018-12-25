@@ -52,7 +52,7 @@ class WikiMap {
 
             if ( attributes.characters ) {
                 compromise.plugin({
-                    words: attributes.characters.reduce((a, e) => ({ [e]: 'FirstName', ...a }), {})
+                    words: attributes.characters.reduce((a, e) => ({ [e]: 'Person', ...a }), {})
                 })
             }
             
