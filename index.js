@@ -19,22 +19,43 @@ const compromise = require('compromise')
 const remark2text = require('remark-retext')
 const retextStringify = require('retext-stringify')
 const english = require('retext-english')
-const pos = require('retext-pos')
+const wink = require('wink-ner')
+const tokenizer = require('wink-tokenizer')
+const tagger = require('wink-pos-tagger')
 
 const stripper = unified()
     .use(markdown)
     .use(remark2text, english.Parser)
-    .use(pos)
     .use(retextStringify)
+
+const tokenize = tokenizer().tokenize
+const ner = wink()
+const recognize = ner.recognize
+const tag = tagger().tag
+
+const names = require('us-ssa-babynames')
+
+ner.learn(names.map(e => ({ text: e, entityType: 'person' })))
+
+// Utils
+const uniq = require('array-uniq')
+
+function unsmart(q) {
+    return q.replace(/[”“]/g, '"').replace(/[‘’]/g, "'")
+}
 
 async function getCharactersFromURL(u) {
     const path = url.fileURLToPath(u)
     const d = await readFile(path, 'utf-8')
     const text = stripper.processSync(d).toString()
-    
-    const arr = nlp(text).people().out('topk').filter(e => e.percent > 10).map(e => e.normal)
 
-    return arr
+    const arr = tag(recognize(tokenize(unsmart(text))))
+        .filter(e => e.pos == 'NNP' && e.entityType == 'person')
+        .map(e => e.value)
+
+    arr.sort()
+
+    return uniq(arr)
 }
 
 async function getLinksFromURL(u) {

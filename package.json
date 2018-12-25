@@ -12,12 +12,16 @@
   "license": "ISC",
   "dependencies": {
     "@aredridel/url-relative": "^1.1.0",
+    "array-uniq": "^2.0.0",
     "compromise": "^11.12.4",
     "remark-parse": "^6.0.3",
     "remark-retext": "^3.1.2",
     "retext-english": "^3.0.2",
-    "retext-pos": "^2.0.1",
     "retext-stringify": "^2.0.2",
-    "unified": "^7.1.0"
+    "unified": "^7.1.0",
+    "us-ssa-babynames": "^2017.0.0",
+    "wink-ner": "^2.0.0",
+    "wink-pos-tagger": "^2.0.0",
+    "wink-tokenizer": "^5.0.0"
   }
 }
