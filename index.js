@@ -107,17 +107,18 @@ class WikiMap {
 
 function mapToDot(root, map) {
     let out = "digraph {\n"
+    out += `tooltip=" ";\n`
     out += `graph [size="15 100" fontname="inherit" bgcolor="transparent"];\n`
-    out += `node [fontname="inherit"];\n`
-    out += `edge [fontname="inherit"];\n`
+    out += `node [fontname="inherit" tooltip=" "];\n`
+    out += `edge [fontname="inherit" tooltip=" "];\n`
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
-        const label = [`<B>${basename(filename, extname(filename))}</B>`, el.characters ? el.characters.join(', ') : null]
+        const label = [`${basename(filename, extname(filename))}\\n`, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
-            .map(e => wordWrap(e, { width: 20, newline: "<BR/>", indent: '', trim: true }))
-            .join("<BR/>")
+            .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
+            .join("\\n")
         const href = relative(root, url)
-        out += `"${url}" [label=<${label}> href="${href}"];\n`
+        out += `"${url}" [label="${label}" href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
