@@ -31,6 +31,7 @@ const stripper = unified()
 
 // Util
 const uniq = require('array-uniq')
+const wordWrap = require('word-wrap')
 
 function unsmart(s) {
     return s.replace(/[“”]/, '"').replace(/[‘’]/, "'")
@@ -108,7 +109,10 @@ function mapToDot(root, map) {
     let out = "digraph {\n"
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
-        const label = [basename(filename, extname(filename)), el.characters ? el.characters.join(', ') : null].filter(e=>e).join("\\n")
+        const label = [basename(filename, extname(filename)), el.characters ? el.characters.join(', ') : null]
+            .filter(e=>e)
+            .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
+            .join("\\n")
         const href = relative(root, url)
         out += `"${url}" [label="${label}" href="${href}"];\n`
         if (el.children) {
