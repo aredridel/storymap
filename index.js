@@ -107,7 +107,9 @@ class WikiMap {
 
 function mapToDot(root, map) {
     let out = "digraph {\n"
-    out += `graph [size="10 20"];\n`
+    out += `graph [size="15 100" fontname="inherit" bgcolor="transparent"];\n`
+    out += `node [fontname="inherit"];\n`
+    out += `edge [fontname="inherit"];\n`
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
         const label = [`<B>${basename(filename, extname(filename))}</B>`, el.characters ? el.characters.join(', ') : null]
