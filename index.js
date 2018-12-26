@@ -107,14 +107,15 @@ class WikiMap {
 
 function mapToDot(root, map) {
     let out = "digraph {\n"
+    out += `graph [size="10 20"];\n`
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
-        const label = [basename(filename, extname(filename)), el.characters ? el.characters.join(', ') : null]
+        const label = [`<B>${basename(filename, extname(filename))}</B>`, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
-            .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
-            .join("\\n")
+            .map(e => wordWrap(e, { width: 20, newline: "<BR/>", indent: '', trim: true }))
+            .join("<BR/>")
         const href = relative(root, url)
-        out += `"${url}" [label="${label}" href="${href}"];\n`
+        out += `"${url}" [label=<${label}> href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 out += `"${url}" -> "${child.url}" [label="${child.text}"];\n`
