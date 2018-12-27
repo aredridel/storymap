@@ -45,7 +45,7 @@ class WikiMap {
 
 
     async run(start) {
-        const getCharactersFromURL = async (u) => {
+        const getAttributesFromURL = async (u) => {
             const path = url.fileURLToPath(u)
             const file = await readFile(path, 'utf-8')
             const { body, attributes } = frontMatter(file)
@@ -66,7 +66,7 @@ class WikiMap {
 
             this.characters = uniq(this.characters.concat(characters))
 
-            return characters
+            return { ...attributes, characters }
         }
 
         const getLinksFromURL= async (u) => {
@@ -94,7 +94,7 @@ class WikiMap {
             if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
             seen.add(el)
             try {
-                map[el] = { children: await getLinksFromURL(el), characters: await getCharactersFromURL(el) }
+                map[el] = { children: await getLinksFromURL(el), ...await getAttributesFromURL(el) }
                 queue = queue.concat(map[el].children.map(e => url.resolve(el, e.url)))
             } catch (e) {
                 if (e.code != 'ENOENT') throw e;
@@ -113,7 +113,8 @@ function mapToDot(root, map) {
     out += `edge [fontname="inherit" tooltip=" "];\n`
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
-        const label = [`${basename(filename, extname(filename))}\\n`, el.characters ? el.characters.join(', ') : null]
+        const title = el.brief || el.title || basename(filename, extname(filename))
+        const label = [`${title}\\n`, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
             .join("\\n")
