@@ -7,6 +7,10 @@
     "graphviz",
     "markdown"
   ],
+  "files": [
+    "*.js",
+    "README.md"
+  ],
   "main": "index.js",
   "author": "Aria Stewart <aredridel@dinhe.net>",
   "license": "ISC",
