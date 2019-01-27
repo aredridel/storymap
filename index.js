@@ -108,7 +108,7 @@ class WikiMap {
 function mapToDot(root, map) {
     let out = "digraph {\n"
     out += `tooltip=" ";\n`
-    out += `graph [size="15 100" fontname="inherit" bgcolor="transparent"];\n`
+    out += `graph [fontname="inherit" bgcolor="transparent"];\n`
     out += `node [fontname="inherit" tooltip=" "];\n`
     out += `edge [fontname="inherit" tooltip=" "];\n`
     for (const [url, el] of Object.entries(map)) {
