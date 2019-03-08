@@ -122,9 +122,13 @@ function mapToDot(root, map) {
         out += `"${url}" [label="${label}" href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
-                if (/\bPrev\b|\bPrevious\b/.test(child.text)) continue;
+                if (/^Prev/.test(child.text)) continue;
                 const text = wordWrap(child.text, { width: 20, newline: "\\n", indent: '', trim: true })
-                out += `"${url}" -> "${child.url}" [label="${text}"];\n`
+                if (child.text.trim() == 'Next') {
+                    out += `"${url}" -> "${child.url}";\n`
+                } else {
+                    out += `"${url}" -> "${child.url}" [label="${text}"];\n`
+                }
                 if (/\bAlt\b|\bAlternate\b/.test(child.text)) {
                     out += `{ rank = same; "${url}"; "${child.url}" }\n`
                 }
