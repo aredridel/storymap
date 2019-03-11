@@ -124,8 +124,11 @@ function mapToDot(root, map) {
             for (const child of el.children) {
                 if (/^Prev/.test(child.text)) continue;
                 const text = wordWrap(child.text, { width: 20, newline: "\\n", indent: '', trim: true })
+                const [, ,label] = (/(\()?(.*?)(\))?/.exec(text) || [])
                 if (child.text.trim() == 'Next') {
                     out += `"${url}" -> "${child.url}";\n`
+                } else if (label) {
+                    out += `"${url}" -> "${child.url}" [label="${label}"];\n`
                 } else {
                     out += `"${url}" -> "${child.url}" [label="${text}"];\n`
                 }
