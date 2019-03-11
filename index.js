@@ -119,18 +119,18 @@ function mapToDot(root, map) {
             .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
             .join("\\n")
         const href = relative(root, url)
-        out += `"${url}" [label="${label}" href="${href}"];\n`
+        out += `"${url}" [label=${JSON.stringify(label)} href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 if (/^Prev/.test(child.text)) continue;
                 const text = wordWrap(child.text, { width: 20, newline: "\\n", indent: '', trim: true })
-                const [, ,label] = (/(\()?(.*?)(\))?/.exec(text) || [])
+                const [, ,label] = (/(\()(.*?)(\))/.exec(text) || [])
                 if (child.text.trim() == 'Next') {
                     out += `"${url}" -> "${child.url}";\n`
                 } else if (label) {
-                    out += `"${url}" -> "${child.url}" [label="${label}"];\n`
+                    out += `"${url}" -> "${child.url}" [label=${JSON.stringify(label)}];\n`
                 } else {
-                    out += `"${url}" -> "${child.url}" [label="${text}"];\n`
+                    out += `"${url}" -> "${child.url}" [label=${JSON.stringify(text)}];\n`
                 }
                 if (/\bAlt\b|\bAlternate\b/.test(child.text)) {
                     out += `{ rank = same; "${url}"; "${child.url}" }\n`
