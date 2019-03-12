@@ -114,16 +114,16 @@ function mapToDot(root, map) {
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
         const title = el.brief || el.title || basename(filename, extname(filename))
-        const label = [`${title}\\n`, el.characters ? el.characters.join(', ') : null]
+        const label = [`${title}\n`, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
-            .map(e => wordWrap(e, { width: 20, newline: "\\n", indent: '', trim: true }))
-            .join("\\n")
+            .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
+            .join("\n")
         const href = relative(root, url)
         out += `"${url}" [label=${JSON.stringify(label)} href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 if (/^Prev/.test(child.text)) continue;
-                const text = wordWrap(child.text, { width: 20, newline: "\\n", indent: '', trim: true })
+                const text = wordWrap(child.text, { width: 20, newline: "\n", indent: '', trim: true })
                 const [, ,label] = (/(\()(.*?)(\))/.exec(text) || [])
                 if (child.text.trim() == 'Next') {
                     out += `"${url}" -> "${child.url}";\n`
