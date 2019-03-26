@@ -88,9 +88,10 @@ class WikiMap {
         }
         const seen = new Set;
         const map = {};
-        let queue = [start];
+        let queue = [...start];
         let el;
         while (el = queue.pop()) {
+            el = String(el)
             if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
             seen.add(el)
             try {
@@ -118,7 +119,7 @@ function mapToDot(root, map) {
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
             .join("\n")
-        const href = relative(root, url)
+        const href = relative(String(root), String(url))
         out += `"${url}" [label=${JSON.stringify(label)} href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
@@ -149,8 +150,8 @@ if (!process.argv[2]) {
     process.exit(1);
 }
 
-const root = url.pathToFileURL(process.argv[2]).href 
+const st = process.argv.slice(2).map(x => url.pathToFileURL(x))
 
 const map = new WikiMap
 
-map.run(root).then(e => mapToDot(root, e)).then(console.log, console.warn)
+map.run(st).then(e => mapToDot(url.pathToFileURL('.'), e)).then(console.log, console.warn)
