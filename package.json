@@ -24,6 +24,7 @@
     "retext-english": "^3.0.2",
     "retext-pos": "^2.0.1",
     "retext-stringify": "^2.0.2",
+    "storyweb": "^1.2.1",
     "unified": "^7.1.0",
     "word-wrap": "^1.2.3"
   }

@@ -33,22 +33,24 @@ const stripper = unified()
 const uniq = require('array-uniq')
 const wordWrap = require('word-wrap')
 
+const storyweb = require('storyweb')
+
 function unsmart(s) {
     return s.replace(/[“”]/, '"').replace(/[‘’]/, "'")
 }
 
 
 class WikiMap {
-    constructor() {
+    constructor(root) {
         this.characters = []
+        this.root = root
     }
 
 
-    async run(start) {
-        const getAttributesFromURL = async (u) => {
-            const path = url.fileURLToPath(u)
-            const file = await readFile(path, 'utf-8')
-            const { body, attributes } = frontMatter(file)
+    async run() {
+        const repo = new storyweb.repo(this.root)
+        const getAttributesFromVFile = async (file) => {
+            const { body, attributes } = frontMatter(file.contents)
             const text = (await stripper.process(body)).toString()
 
             if ( attributes.characters ) {
@@ -69,12 +71,10 @@ class WikiMap {
             return { ...attributes, characters }
         }
 
-        const getLinksFromURL= async (u) => {
-            const path = url.fileURLToPath(u)
-            const file = await readFile(path, 'utf-8')
-            const { body } = frontMatter(file)
+        const getLinksFromVFile = async (file) => {
+            const { body } = frontMatter(file.contents)
             const ast = parser.parse(body)
-            return getLinks(u, ast)
+            return getLinks(file, ast)
         }
 
         function getLinks(u, ast) {
@@ -88,18 +88,8 @@ class WikiMap {
         }
         const seen = new Set;
         const map = {};
-        let queue = [start];
-        let el;
-        while (el = queue.pop()) {
-            if (seen.has(el) || (new URL(el)).protocol != 'file:') continue;
-            seen.add(el)
-            try {
-                map[el] = { children: await getLinksFromURL(el), ...await getAttributesFromURL(el) }
-                queue = queue.concat(map[el].children.map(e => url.resolve(el, e.url)))
-            } catch (e) {
-                if (e.code != 'ENOENT') throw e;
-                map[el] = { error: 'ENOENT' }
-            }
+        for await (const el of repo) {
+            map[el] = { children: await getLinksFromVFile(el), ...await getAttributesFromVFile(el) }
         }
         return map
     }
@@ -149,8 +139,8 @@ if (!process.argv[2]) {
     process.exit(1);
 }
 
-const root = url.pathToFileURL(process.argv[2]).href 
+const root = process.argv[2]
 
-const map = new WikiMap
+const map = new WikiMap(root)
 
-map.run(root).then(e => mapToDot(root, e)).then(console.log, console.warn)
+map.run().then(e => mapToDot(root, e)).then(console.log, console.warn)
