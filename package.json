@@ -1,6 +1,6 @@
 {
   "name": "storymap",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "description": "A small tool for understanding the structure of interlinked markdown files.",
   "bin": "index.js",
   "keywords": [
