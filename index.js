@@ -53,13 +53,13 @@ class WikiMap {
 
             if ( attributes.characters ) {
                 compromise.plugin({
-                    words: attributes.characters.reduce((a, e) => ({ [e]: 'Person', ...a }), {})
+                    words: [].concat(attributes.characters).reduce((a, e) => ({ [e]: 'Person', ...a }), {})
                 })
             }
             
             const characters = (
                 attributes.characters
-                ? attributes.characters
+                ? [].concat(attributes.characters)
                 : compromise(unsmart(text)).people().out('topk').filter(e => e.percent > 20).map(e => e.normal)
             )
                 .map(e => e.replace(/^[a-z]/, l => l.toUpperCase()))
