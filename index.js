@@ -108,6 +108,7 @@ class WikiMap {
 
 function mapToDot(root, map) {
     let out = "digraph {\n"
+    let subgraphs = {};
     out += `tooltip=" ";\n`
     out += `graph [fontname="inherit" bgcolor="transparent"];\n`
     out += `node [fontname="inherit" tooltip=" " shape="note" width="2"];\n`
@@ -115,11 +116,15 @@ function mapToDot(root, map) {
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
         const title = el.brief || el.title || basename(filename, extname(filename))
-        const label = [`${title}\n\n`, el.characters ? el.characters.join(', ') : null]
+        const place = el.place
+        const label = [`${title}\n\n`, el.place, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
             .join("\n")
         const href = relative(String(root), String(url))
+        if (place) {
+            subgraphs[place] = (subgraphs[place] || []).concat(url);
+        }
         out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
@@ -140,6 +145,14 @@ function mapToDot(root, map) {
         } else {
             out += `"${url}" -> "${el.error}";\n`
         }
+    }
+    let n = 0;
+    for (const [ place, nodes ] of Object.entries(subgraphs)) {
+        out += `subgraph cluster_${n++} {
+            label="${place}";
+            ${nodes.map(JSON.stringify).join("; ")};
+        }\n`;
+
     }
     out += "}\n";
     return out;
