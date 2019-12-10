@@ -118,6 +118,7 @@ function mapToDot(root, map) {
         const filename = decodeURIComponent((new URL(url)).pathname)
         const title = el.brief || el.title || basename(filename, extname(filename))
         const place = el.place
+        const status = (el.status || 'final').toLowerCase() 
         const label = [`${title}\n\n`, el.place, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
@@ -126,7 +127,8 @@ function mapToDot(root, map) {
         if (place) {
             subgraphs[place] = (subgraphs[place] || []).concat(url);
         }
-        out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}"];\n`
+        const color = status == 'draft' ? "gray75" : status == "outline" ? "gray50" : "black";
+        out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}" color="${color}" fontcolor="${color}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 if (/^Prev/.test(child.text)) continue;
