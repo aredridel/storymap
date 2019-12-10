@@ -110,7 +110,7 @@ function mapToDot(root, map) {
     let out = "digraph {\n"
     out += `tooltip=" ";\n`
     out += `graph [fontname="inherit" bgcolor="transparent"];\n`
-    out += `node [fontname="inherit" tooltip=" "];\n`
+    out += `node [fontname="inherit" tooltip=" " shape="note" width="2"];\n`
     out += `edge [fontname="inherit" tooltip=" "];\n`
     for (const [url, el] of Object.entries(map)) {
         const filename = decodeURIComponent((new URL(url)).pathname)
@@ -120,7 +120,7 @@ function mapToDot(root, map) {
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
             .join("\n")
         const href = relative(String(root), String(url))
-        out += `"${url}" [label=${JSON.stringify(label)} href="${href}"];\n`
+        out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}"];\n`
         if (el.children) {
             for (const child of el.children) {
                 if (/^Prev/.test(child.text)) continue;
