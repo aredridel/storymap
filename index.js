@@ -110,6 +110,7 @@ function mapToDot(root, map) {
     let out = "digraph {\n"
     let subgraphs = {};
     out += `tooltip=" ";\n`
+    out += `newrank=true;\n`
     out += `graph [fontname="inherit" bgcolor="transparent"];\n`
     out += `node [fontname="inherit" tooltip=" " shape="note" width="2"];\n`
     out += `edge [fontname="inherit" tooltip=" "];\n`
@@ -151,11 +152,11 @@ function mapToDot(root, map) {
         out += `subgraph cluster_${n++} {
             label="${place}";
             ${nodes.map(JSON.stringify).join("; ")};
-        }\n`;
+        }\n`
 
     }
-    out += "}\n";
-    return out;
+    out += "}\n"
+    return out
 }
 
 if (!process.argv[2]) {
