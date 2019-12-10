@@ -1,6 +1,7 @@
 {
   "name": "storymap",
   "version": "1.20.0",
+  "type": "module",
   "description": "A small tool for understanding the structure of interlinked markdown files.",
   "bin": "index.js",
   "keywords": [
@@ -26,5 +27,14 @@
     "retext-stringify": "^2.0.4",
     "unified": "^8.4.2",
     "word-wrap": "^1.2.3"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module"
+    }
+  },
+  "engines": {
+    "node": ">13.0.0"
   }
 }
