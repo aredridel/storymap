@@ -119,7 +119,7 @@ function mapToDot(root, map) {
         const title = el.brief || el.title || basename(filename, extname(filename))
         const place = el.place
         const status = (el.status || 'final').toLowerCase() 
-        const label = [`${title}\n\n`, el.place, el.characters ? el.characters.join(', ') : null]
+        const label = [`${title}\n\n`, el.characters ? el.characters.join(', ') : null]
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
             .join("\n")
