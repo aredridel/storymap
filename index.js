@@ -32,7 +32,7 @@ function mapToDot(root, map) {
         if (place) {
             subgraphs[place] = (subgraphs[place] || []).concat(url);
         }
-        const color = status == 'draft' ? "gray75" : status == "outline" ? "gray50" : "black";
+        const color = status == 'draft' ? "gray50" : status == "outline" ? "gray75" : "black";
         out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}" color="${color}" fontcolor="${color}"];\n`
         if (el.children) {
             for (const child of el.children) {
