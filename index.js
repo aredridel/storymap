@@ -25,9 +25,17 @@ function mapToDot(root, map) {
         const place = el.place
         const pov = el.pov
         const status = (el.status || 'final').toLowerCase() 
+
+        if (pov) {
+            if (el.characters.includes(pov)) {
+                el.characters = el.characters.filter(e => e != pov);
+            }
+            el.characters.unshift(pov);
+        }
+
         const label = [
-          `${title}${ pov ? ` (${pov})` : ""}\n\n`,
-          `\n`, el.characters ? el.characters.join(', ') : null
+          `${title}`,
+          `\n\n`, el.characters ? el.characters.join(', ') : null
         ]
             .filter(e=>e)
             .map(e => wordWrap(e, { width: 20, newline: "\n", indent: '', trim: true }))
