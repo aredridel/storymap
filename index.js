@@ -51,13 +51,23 @@ function mapToDot(root, map) {
                 if (/^Prev/.test(child.text)) continue;
                 const text = wordWrap(child.text, { width: 20, newline: "\n", indent: '', trim: true })
                 const [, ,label] = (/(\()(.*?)(\))/.exec(text) || [])
-                if (child.text.trim() == 'Next') {
-                    out += `"${url}" -> "${child.url}";\n`
-                } else if (label) {
-                    out += `"${url}" -> "${child.url}" [label=${JSON.stringify(label)}];\n`
-                } else {
-                    out += `"${url}" -> "${child.url}" [label=${JSON.stringify(text)}];\n`
+                const edgeParams = {};
+                if (label) {
+                    edgeParams.label = label;
+                } else if (text != 'Next' && text != 'Later') {
+                    edgeParams.label = text;
                 }
+
+                if (text == 'Later') {
+                    edgeParams.weight = 0;
+                    edgeParams.color = "gray75";
+                } else {
+                    edgeParams.weight = 1000;
+                }
+
+                out += `"${url}" -> "${child.url}" [${Object.entries(edgeParams)
+                        .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+                        .join(' ')}];\n`
                 if (/\bAlt\b|\bAlternate\b/.test(child.text)) {
                     out += `{ rank = same; "${url}"; "${child.url}" }\n`
                 }
