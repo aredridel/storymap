@@ -3,7 +3,7 @@
   "version": "2.3.0",
   "type": "module",
   "description": "A small tool for understanding the structure of interlinked markdown files.",
-  "bin": "index.js",
+  "bin": "cli.js",
   "keywords": [
     "graphviz",
     "markdown"
