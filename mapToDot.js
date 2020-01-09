@@ -2,6 +2,12 @@ import { basename, extname } from 'path';
 import relative from '@aredridel/url-relative';
 import wordWrap from 'word-wrap';
 
+const statusToColor = {
+    "vignette": "LightSteelBlue",
+    "draft" : "gray50",
+    "outline" : "gray75"
+};
+
 export default function mapToDot(root, map) {
     let out = "digraph {\n"
     let subgraphs = {};
@@ -35,7 +41,7 @@ export default function mapToDot(root, map) {
         if (place) {
             subgraphs[place] = (subgraphs[place] || []).concat(url);
         }
-        const color = status == 'draft' ? "gray50" : status == "outline" ? "gray75" : "black";
+        const color = statusToColor[status] || "black";
         out += `"${url}" [label=${JSON.stringify(label + "\n").replace(/\\n/g, "\\l")} href="${href}" color="${color}" fontcolor="${color}"];\n`
         if (el.children) {
             for (const child of el.children) {
